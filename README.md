@@ -74,7 +74,7 @@ Base.:*(a::Newton1D,b::Newton1D) = Newton1D(a.f*b.f, a.dfdx*b.x+a.f*b.dfdx)
 As we will see below, it is convenient to define
 
 ```julia
-Base.exp(a::Newton1D) = exp(a.f)*Newton(1.0,a.dfdx)
+Base.exp(a::Newton1D) = exp(a.f)*Newton1D(1.0,a.dfdx)
 ```
 
 and
