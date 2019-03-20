@@ -1,0 +1,4 @@
+name = "StochasticForwardDiff"
+uuid = "94965052-4ad1-11e9-0d67-1b7412973951"
+authors = ["Eric Forgy <Eric.Forgy@coherentasia.com>"]
+version = "0.1.0"
