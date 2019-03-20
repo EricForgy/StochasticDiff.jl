@@ -1,8 +1,8 @@
-module StochasticForwardDiff
+module StochasticDiff
 
 export Stochastic, Newtonian
 
-include("stochastic.jl");
+include("stochastic.jl"); using .Stochastics
 
 include("newtonian.jl")
 

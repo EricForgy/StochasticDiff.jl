@@ -1,4 +1,4 @@
-name = "StochasticForwardDiff"
-uuid = "94965052-4ad1-11e9-0d67-1b7412973951"
+name = "StochasticDiff"
+uuid = "f74cc760-4b03-11e9-0a73-8b28b1e2ce7d"
 authors = ["Eric Forgy <Eric.Forgy@coherentasia.com>"]
 version = "0.1.0"

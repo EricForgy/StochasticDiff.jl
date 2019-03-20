@@ -1,5 +1,7 @@
 module Stochastics
 
+export Stochastic
+
 struct Stochastic{F,dFdx,dFdt}
     f::F
     dfdx::dFdx
@@ -16,10 +18,14 @@ Base.:*(x::Stochastic,k::R) where R <:Real = Stochastic(k*x.f,k*x.dfdx,k*x.dfdt)
 Base.:*(k::R,x::Stochastic) where R <:Real = x*k
 
 function Base.inv(y::Stochastic)
-    Stochastic(
-        1/y.f,
-        -y.dfdx/y.f^2,
-        -y.f^(-2)*y.dfdt + y.f^(-3)*y.dfdx^2)
+    invy = inv(y.f)
+    return invy*Stochastic(
+        1.0,
+        -invy*y.dfdx,
+        -invy*y.dfdt + invy^2*y.dfdx^2)
+end
+
+# Check inv(y)*y == 1
 
 Base.:^(x::Stochastic,k::R) where R <:Number = 
     Stochastic(
@@ -63,10 +69,10 @@ function Base.log(x::Stochastic)
         invx*x.dfdt - .5*val^2)
 end
 
-Base.:^(x::Stochastic,y::Stochastic) = exp(y*log(x))
+Base.:^(x,y::Stochastic) = exp(y*log(x))
 
 # Check log(exp(x)) == x
 
-# Check exp(y*log(x)) == x^y (for y = Real and y = Stochastic)
+# Check exp(y*log(x)) == x^y (for x=Real|Stochastic and y= Real|Stochastic)
 
 end
