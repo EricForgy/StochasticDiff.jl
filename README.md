@@ -1,4 +1,4 @@
-_Note: I wrote this note and this package out of curiosity and I did not perform any literature search whatsoever. I would be suprised if this is new, but you never know :) If this material is well known, please let me know and I will add a reference._
+_Note: I wrote this note and this package out of curiosity and I did not perform any literature search whatsoever. I would be suprised if this is new, but you never know_ :) _If this material is well known, please let me know and I will add a reference._
 
 ## StochasticDiff.jl
 
@@ -6,41 +6,57 @@ This is a simple package to demonstrate the extension of automatic differentiati
 
 ### Background
 
-Give any two functions $f$ and $g$, a derivation $d$ is a nilpotent map satisfying the product rule
+Give any two functions `f` and `g`, a derivation `d` is a nilpotent map satisfying the product rule
 
-$$d(fg) = (df)g + f(dg).$$
+```julia
+d(fg) = (df)g + f(dg).
+```
 
-Collecting terms on the right-hand side, we observe that $d(fg)$ can be determined if we know, not just $f$ and $g$, but the pairs $(f,df)$ and $(g,dg)$.
+Collecting terms on the right-hand side, we observe that `d(fg)` can be determined if we know, not just `f` and `g`, but the pairs `(f,df)` and `(g,dg)`.
 
-Since $f$ and $g$ are functions and $df$ and $dg$ are covector fields on some space, then the pairs $(f,df)$ and $(g,dg)$ represent covector fields on a larger total space.
+Since `f` and `g` are functions and `df` and `dg` are covector fields on some space, then the pairs `(f,df)` and `(g,dg)` represent covector fields on a larger total space.
 
-Let $\Pi$ denote a projection map given by
+Let `Pi` denote a projection map given by
 
-$$\Pi(f,df) = f.$$
+```julia
+Pi(f,df) = f.
+```
 
-For a given derivation $d$, we have the inverse map
+For a given derivation `d`, we have the inverse map
 
-$$\Pi^{-1} f = (f,df).$$
+```
+Pi^(-1) f = (f,df).
+```
 
-We introduce a product of $(f,df)$ and $(g,dg)$ by insisting that $\Pi^{-1}$ be an algebra homomorphism, i.e.
+We introduce a product of `(f,df)` and `(g,dg)` by insisting that `Pi^(-1)` be an algebra homomorphism, i.e.
 
-$$\Pi^{-1}(fg) = \left(\Pi^{-1}f\right)\left(\Pi^{-1} g\right)$$
+```julia
+Pi^(-1)(f*g) = Pi^(-1)(f)*Pi^(-1)(g)
+```
 
 so that 
 
-$$(f,df)(g,dg) = (fg,d(fg)).$$
+```julia
+(f,df)(g,dg) = (fg,d(fg)).
+```
 
 #### Example: One Dimension
 
-Consider the case of a smooth one-dimensional space parameterized by a smooth  coordinate function $x$ and two covectors
+Consider the case of a smooth one-dimensional space parameterized by a smooth  coordinate function `x` and two covectors
 
-$$(f,df) = (f,(\partial_x f) dx)$$
+```julia
+(f,df) = (f,(@_x f) dx)
+```
 
 and
 
-$$(g,dg) = (g,(\partial_x g) dx).$$
+```julia
+(g,dg) = (g,(@_x g) dx),
+```
 
-The data for a covector $(f,df)$ can be encoded in a struct
+where `@_x` denotes partial derivative with respect to `x`.
+
+The data for a covector `(f,df)` can be encoded in a struct
 
 ```julia
 struct Newton1D{F,dFdx}
@@ -79,11 +95,16 @@ Base.:^(x,y::Newton1D) = exp(y*log(x))
 ### Newtonian Processes
 
 Next consider a (1+1)-dimensional Newtonian process
-$$df = \left(\partial_x f\right) dx + \left(\partial_t f\right) dt.$$
 
-The corresponding covector $(f,df)$ can be expanded to
+```julia
+df = (@_x f) dx + (@_t f) dt.
+```
 
-$$(f,df) = (f,(\partial_x f)dx) + (f,(\partial_t f)dt)$$
+The corresponding covector `(f,df)` can be expanded to
+
+```julia
+(f,df) = (f,(@_x f)dx) + (f,(@_t f)dt)
+```
 
 indicating the process can be encoded into a struct
 
@@ -121,7 +142,7 @@ Base.:^(x,y::Newtonian) = exp(y*log(x))
 
 Finally, consider the (1+1)-dimensional stochastic process
 
-$$df = \left(\partial_x f\right) dx + \left(\partial_t f + \frac {1}{2}\partial_x^2 f\right) dt.$$
+``df = (@_x f) dx + (@_t f + 1/2 @_x^2 f) dt.``
 
 Like the Newtonian process above, the stochastic process can be encoded into a struct
 
@@ -137,15 +158,15 @@ Stochastic processes are also amenable to automatic differentiate with some mino
 
 To see this, first rewrite the above process as
 
-$$df = (\partial_x f) dx + (\tilde{\partial_t} f) dt,$$
+``df = (@_x f) dx + (~@_t f) dt,``
 
 where
 
-$$\tilde{\partial_t} = \partial_t + \frac{1}{2} \partial_x^2.$$
+``~@_t = @_t + 1/2 @_x^2.``
 
-The operator $\tilde{\partial_t}$ does not satisfy the usual product rule of partial derivatives. Instead, it satisfies
+The operator `~@_t` does not satisfy the usual product rule of partial derivatives. Instead, it satisfies
 
-$$\tilde{\partial_t}(fg) = (\tilde{\partial_t} f) g + f(\tilde{\partial_t} g) + (\partial_x f)(\partial_x g).$$
+``~@_t(fg) = (~@_t f)g + f(~@_t g) + (@_x f)(@_x g).``
 
 Therefore, we have
 
@@ -204,11 +225,15 @@ Base.:^(x,y::Stochastic) = exp(y*log(x))
 
 Consider geometric Brownian motion in (1+1)-dimensions given by the stochastic differential equation
 
-$$dS = \mu S dt + \sigma S dx$$
+```julia
+dS = mu S dt + sigma S dx
+```
 
 with closed-form solution
 
-$$S(x,t) = S(0,0) \exp\left[\left(\mu-\frac{\sigma^2}{2}\right)t + \sigma x\right]$$
+```julia
+S(x,t) = S(0,0) exp[(mu-sigma^2/2)t + sigma x]
+```
 
 We'll first write down the closed form solution as a stochastic function:
 
@@ -233,7 +258,9 @@ Stochastic{Float64,Float64,Float64}(1.0, 5.0, 4.0)
 
 This is the expected result since
 
-$$\partial_x S = \mu S\quad\text{and}\quad\tilde{\partial_t} S = \mu S$$
+```julia
+@_x S = mu S and ~@_t S = mu S.
+```
 
 Furthermore, we have
 
