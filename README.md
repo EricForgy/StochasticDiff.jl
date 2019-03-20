@@ -142,7 +142,9 @@ Base.:^(x,y::Newtonian) = exp(y*log(x))
 
 Finally, consider the (1+1)-dimensional stochastic process
 
-``df = (@_x f) dx + (@_t f + 1/2 @_x^2 f) dt.``
+```julia
+df = (@_x f) dx + (@_t f + 1/2 @_x^2 f) dt.
+```
 
 Like the Newtonian process above, the stochastic process can be encoded into a struct
 
@@ -158,15 +160,21 @@ Stochastic processes are also amenable to automatic differentiate with some mino
 
 To see this, first rewrite the above process as
 
-``df = (@_x f) dx + (~@_t f) dt,``
+```julia
+df = (@_x f) dx + (~@_t f) dt,
+```
 
 where
 
-``~@_t = @_t + 1/2 @_x^2.``
+```julia
+~@_t = @_t + 1/2 @_x^2.
+```
 
 The operator `~@_t` does not satisfy the usual product rule of partial derivatives. Instead, it satisfies
 
-``~@_t(fg) = (~@_t f)g + f(~@_t g) + (@_x f)(@_x g).``
+```julia
+~@_t(fg) = (~@_t f)g + f(~@_t g) + (@_x f)(@_x g).
+```
 
 Therefore, we have
 
