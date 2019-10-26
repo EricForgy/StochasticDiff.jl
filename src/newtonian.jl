@@ -8,6 +8,13 @@ struct Newtonian{F,dFdx,dFdt}
     dfdt::dFdt
 end
 
+Base.show(io::IO,x::Newtonian) = print(io,"""
+Newtonian:
+  f: $(x.f)
+  dfdx: $(x.dfdx)
+  dfdt: $(x.dfdt)""")
+Base.show(io::IO,::MIME"text/plain",x::Newtonian) = show(io,x)
+
 Base.:+(x::Newtonian,y::Newtonian) = 
     Newtonian(x.f+y.f,x.dfdx+y.dfdx,x.dfdt+y.dfdt)
 

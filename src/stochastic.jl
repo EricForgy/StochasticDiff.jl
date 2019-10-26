@@ -7,6 +7,12 @@ struct Stochastic{F,dFdx,dFdt}
     dfdx::dFdx
     dfdt::dFdt
 end
+Base.show(io::IO,x::Stochastic) = print(io,"""
+Stochastic:
+  f: $(x.f)
+  dfdx: $(x.dfdx)
+  dfdt: $(x.dfdt)""")
+Base.show(io::IO,::MIME"text/plain",x::Stochastic) = show(io,x)
 
 Base.:+(x::Stochastic,y::Stochastic) = 
     Stochastic(x.f+y.f,x.dfdx+y.dfdx,x.dfdt+y.dfdt)
