@@ -50,7 +50,7 @@ end
 
 Consider a simple (1+1)-dimensional differential equation
 
-$$df = \alpha f dx + \beta f dt + $$
+$$df = \alpha f dx + \beta f dt$$
 
 with closed-form solution
 

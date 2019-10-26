@@ -3,11 +3,7 @@
     f::F
     dfdx::dFdx
     dfdt::dFdt
-end</code></pre><h3><a class="nav-anchor" id="Example:-Geometric-Linear-Motion-1" href="#Example:-Geometric-Linear-Motion-1">Example: Geometric Linear Motion</a></h3><p>Consider a simple (1+1)-dimensional differential equation</p><div>\[df = \alpha f dx + \beta f dt + $$
-
-with closed-form solution
-
-$$f(x,t) = f_0 \exp{\left(\alpha x + \beta t\right)}.\]</div><p>The partial derivatives of <span>$f(x,t)$</span> are</p><div>\[\partial_x f(x,t) = \alpha f(x,t)\]</div><p>and</p><div>\[\partial_t f(x,t) = \beta f(x,y).\]</div><p>For concreteness, let <span>$\alpha = 3$</span>, <span>$\beta = 4$</span> and <span>$f(0,0) = 1$</span> so we have:</p><pre><code class="language-julia">julia&gt; f(x,t) = exp(3*x+4*t)</code></pre><p>with</p><div>\[\partial_x f = 3\quad\text{and}\quad\partial_t f = 4.\]</div><p>Next, define:</p><div>\[\pi^{-1}[f(x,t)] := f\left[\pi^{-1}(x),\pi^{-1}(t)\right]\]</div><p>or</p><pre><code class="language-julia">julia&gt; fnewt(x,t) = f(Newtonian(x,1,0),Newtonian(t,0,1))</code></pre><p>which comes from</p><div>\[\pi^{-1}(x) = (x,dx) = Newtonian(x,1,0)\]</div><p>and</p><div>\[\pi^{-1}(t) = (t,dt) = Newtonian(t,0,1).\]</div><p>Evaluating</p><pre><code class="language-julia">julia&gt; fnewt(0,0)
+end</code></pre><h3><a class="nav-anchor" id="Example:-Geometric-Linear-Motion-1" href="#Example:-Geometric-Linear-Motion-1">Example: Geometric Linear Motion</a></h3><p>Consider a simple (1+1)-dimensional differential equation</p><div>\[df = \alpha f dx + \beta f dt\]</div><p>with closed-form solution</p><div>\[f(x,t) = f_0 \exp{\left(\alpha x + \beta t\right)}.\]</div><p>The partial derivatives of <span>$f(x,t)$</span> are</p><div>\[\partial_x f(x,t) = \alpha f(x,t)\]</div><p>and</p><div>\[\partial_t f(x,t) = \beta f(x,y).\]</div><p>For concreteness, let <span>$\alpha = 3$</span>, <span>$\beta = 4$</span> and <span>$f(0,0) = 1$</span> so we have:</p><pre><code class="language-julia">julia&gt; f(x,t) = exp(3*x+4*t)</code></pre><p>with</p><div>\[\partial_x f = 3\quad\text{and}\quad\partial_t f = 4.\]</div><p>Next, define:</p><div>\[\pi^{-1}[f(x,t)] := f\left[\pi^{-1}(x),\pi^{-1}(t)\right]\]</div><p>or</p><pre><code class="language-julia">julia&gt; fnewt(x,t) = f(Newtonian(x,1,0),Newtonian(t,0,1))</code></pre><p>which comes from</p><div>\[\pi^{-1}(x) = (x,dx) = Newtonian(x,1,0)\]</div><p>and</p><div>\[\pi^{-1}(t) = (t,dt) = Newtonian(t,0,1).\]</div><p>Evaluating</p><pre><code class="language-julia">julia&gt; fnewt(0,0)
 Newtonian:
   f: 1.0
   dfdx: 3.0 # alpha
