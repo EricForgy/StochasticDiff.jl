@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>StochasticDiff.jl · StochsticDiff.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>StochsticDiff.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>StochasticDiff.jl</a><ul class="internal"><li><a class="toctext" href="#Background-1">Background</a></li><li><a class="toctext" href="#Newtonian-Processes-1">Newtonian Processes</a></li><li><a class="toctext" href="#Stochastic-Processes-1">Stochastic Processes</a></li><li><a class="toctext" href="#Geometric-Brownian-Motion-1">Geometric Brownian Motion</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>StochasticDiff.jl</a></li></ul><a class="edit-page" href="https://github.com/EricForgy/StochasticDiff.jl/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>StochasticDiff.jl</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="StochasticDiff.jl-1" href="#StochasticDiff.jl-1">StochasticDiff.jl</a></h1><p>This is a simple package to demonstrate the extension of automatic differentiation to stochastic processes.</p><h2><a class="nav-anchor" id="Background-1" href="#Background-1">Background</a></h2><p>Give any two functions <span>$f$</span> and <span>$g$</span>, a derivation <span>$d$</span> is a nilpotent map satisfying the product rule</p><div>\[d(fg) = (df)g + f(dg).\]</div><p>We observe that <span>$d(fg)$</span> can be determined if we know, not just <span>$f$</span> and <span>$g$</span>, but the pairs <span>$(f,df)$</span> and <span>$(g,dg)$</span>.</p><p>Since <span>$f$</span> and <span>$g$</span> are functions and <span>$df$</span> and <span>$dg$</span> are covector fields on some space, then the pairs <span>$(f,df)$</span> and <span>$(g,dg)$</span> represent covector fields on a larger total space.</p><p>Let <span>$\pi$</span> denote a projection map given by</p><div>\[\pi(f,df) = f.\]</div><p>For a given derivation <span>$d$</span>, we have the inverse map</p><div>\[\pi^{-1} f = (f,df).\]</div><p>We introduce a product of <span>$(f,df)$</span> and <span>$(g,dg)$</span> by insisting that <span>$\pi^{-1}$</span> be an algebra homomorphism, i.e.</p><p>so that</p><div>\[\begin{aligned}(f,df)(g,dg) :&amp;= (fg,d(fg)) \\ &amp;= (fg,(df)g+f(dg)).\end{aligned}\]</div><h3><a class="nav-anchor" id="Example:-One-Dimension-1" href="#Example:-One-Dimension-1">Example: One Dimension</a></h3><p>Consider the case of a smooth one-dimensional space parameterized by a smooth  coordinate function <span>$x$</span> and two covectors</p><div>\[(f,df) = (f,(\partial_x f) dx)\]</div><p>and</p><div>\[(g,dg) = (g,(\partial_x g) dx),\]</div><p>where <span>$\partial_x$</span> denotes partial derivative with respect to <span>$x$</span>.</p><p>The data for a covector <span>$(f,df)$</span> can be encoded in a struct</p><pre><code class="language-julia">struct Newton1D{F,dFdx}
+    f::F
+    dfdx::dFdx
+end</code></pre><p>and the product is given by</p><pre><code class="language-julia">Base.:*(a::Newton1D,b::Newton1D) = Newton1D(a.f*b.f, a.dfdx*b.x+a.f*b.dfdx)</code></pre><p>As we will see below, it is convenient to define</p><pre><code class="language-julia">Base.exp(a::Newton1D) = exp(a.f)*Newton1D(1.0,a.dfdx)</code></pre><p>and</p><pre><code class="language-julia">function Base.log(a::Newton1D)
+    invx = inv(a.f)
+    return Newtonian(log(a.f),invx*a.dfdx)
+end</code></pre><p>so that</p><pre><code class="language-julia">Base.:^(x,y::Newton1D) = exp(y*log(x))</code></pre><h2><a class="nav-anchor" id="Newtonian-Processes-1" href="#Newtonian-Processes-1">Newtonian Processes</a></h2><p>Next consider a (1+1)-dimensional Newtonian process</p><div>\[df = (\partial_x f) dx + (\partial_t f) dt.\]</div><p>The corresponding covector <span>$(f,df)$</span> can be expanded to</p><div>\[(f,df) = (f,(\partial_x f)dx) + (f,(\partial_t f)dt)\]</div><p>indicating the process can be encoded into a struct</p><pre><code class="language-julia">struct Newtonian{F,dFdx,dFdt}
+    f::F
+    dfdx::dFdx
+    dfdt::dFdt
+end</code></pre><p>Similar to the one-dimensional example above, the product of two covectors is given by</p><pre><code class="language-julia">Base.:*(a::Newtonian,b::Newtonian) = Newtonian(
+    a.f*b.f,
+    a.f*b.dfdx + a.dfdx*b.f,
+    a.f*b.dfdt + a.dfdt*b.f)</code></pre><p>and we have</p><pre><code class="language-julia">Base.exp(x::Newtonian) = exp(x.f)*Newtonian(1,x.dfdx,x.dfdt)
+
+function Base.log(x::Newtonian)
+    invx = inv(x.f)
+    return Newtonian(log(x.f),invx*x.dfdx,invx*x.dfdt)
+end
+
+Base.:^(x,y::Newtonian) = exp(y*log(x))</code></pre><h2><a class="nav-anchor" id="Stochastic-Processes-1" href="#Stochastic-Processes-1">Stochastic Processes</a></h2><p>Finally, consider the (1+1)-dimensional stochastic process</p><div>\[df = (\partial_x f) dx + (\partial_t f + 1/2 \partial_x^2 f) dt.\]</div><p>Like the Newtonian process above, the stochastic process can be encoded into a struct</p><pre><code class="language-julia">struct Stochastic{F,dFdx,dFdt}
+    f::F
+    dfdx::dFdx
+    dfdt::dFdt
+end</code></pre><p>Stochastic processes are also amenable to automatic differentiate with some minor revisions.</p><p>To see this, first rewrite the above process as</p><div>\[df = (\partial_x f) dx + (~\partial_t f) dt,\]</div><p>where</p><div>\[~\partial_t = \partial_t + 1/2 \partial_x^2.\]</div><p>The operator <span>$~\partial_t$</span> does not satisfy the usual product rule of partial derivatives. Instead, it satisfies</p><div>\[~\partial_t(fg) = (~\partial_t f)g + f(~\partial_t g) + (\partial_x f)(\partial_x g).\]</div><p>Therefore, we have</p><pre><code class="language-julia">Base.:*(x::Stochastic,y::Stochastic) =
+    Stochastic(
+        x.f*y.f,
+        x.f*y.dfdx + x.dfdx*y.f,
+        x.f*y.dfdt + x.dfdt*y.f + x.dfdx*y.dfdx
+    )</code></pre><p>Then, with a bit of tedious, but straightforward algebra, we have</p><pre><code class="language-julia">function Base.inv(y::Stochastic)
+    invy = inv(y.f)
+    return invy*Stochastic(
+        1.0,
+        -invy*y.dfdx,
+        -invy*y.dfdt + invy^2*y.dfdx^2)
+end
+
+Base.:^(x::Stochastic,k::R) where R &lt;:Number =
+    Stochastic(
+        x.f^k,
+        k*x.f^(k-1)*x.dfdx,
+        k*x.f^(k-1)*x.dfdt + .5*k*(k-1)*x.f^(k-2)*x.dfdx^2)
+
+        Base.:/(x::Stochastic,y::Stochastic) =
+    Stochastic(
+        x.f/y.f,
+        (x.dfdx*y.f - x.f*y.dfdx)/y.f^2,
+        (x.dfdt*y.f^2 + x.f*(y.dfdx^2 - y.f*y.dfdt))/y.f^3
+    )
+
+Base.exp(x::Stochastic) =
+    exp(x.f)*Stochastic(
+        1,
+        x.dfdx,
+        x.dfdt + .5*x.dfdx^2)
+
+function Base.log(x::Stochastic)
+    invx = inv(x.f)
+    val = invx*x.dfdx
+    Stochastic(
+        log(x.f),
+        val,
+        invx*x.dfdt - .5*val^2)
+end
+
+Base.:^(x,y::Stochastic) = exp(y*log(x))</code></pre><h2><a class="nav-anchor" id="Geometric-Brownian-Motion-1" href="#Geometric-Brownian-Motion-1">Geometric Brownian Motion</a></h2><p>Consider geometric Brownian motion in (1+1)-dimensions given by the stochastic differential equation</p><div>\[dS = mu S dt + sigma S dx\]</div><p>with closed-form solution</p><div>\[S(x,t) = S(0,0) exp[(mu-sigma^2/2)t + sigma x]\]</div><p>We&#39;ll first write down the closed form solution as a stochastic function:</p><pre><code class="language-julia">julia&gt; mu = 4; sigma = 5; f(x::Stochastic,t::Stochastic) = exp((mu-sigma^2/2)*t + sigma*x)
+f (generic function with 2 methods)</code></pre><p>Next, for convenience, we&#39;ll add a method to take number values for <span>$x$</span> and <span>$t$</span>:</p><pre><code class="language-julia">julia&gt; f(x,t) = f(Stochastic(x,1,0),Stochastic(t,0,1))
+f (generic function with 2 methods)</code></pre><p>Finally, we evaluate the function at <span>$x = 0, y = 0$</span>:</p><pre><code class="language-julia">julia&gt; f(0,0)
+Stochastic{Float64,Float64,Float64}(1.0, 5.0, 4.0)</code></pre><p>This is the expected result since</p><div>\[\partial_x S = mu S and ~\partial_t S = mu S.\]</div><p>Furthermore, we have</p><pre><code class="language-julia">julia&gt; f(1,1)/f(1,1).f
+Stochastic{Float64,Float64,Float64}(1.0, 5.0, 4.0)</code></pre><p>as expected.</p><h3><a class="nav-anchor" id="Sanity-Checks-1" href="#Sanity-Checks-1">Sanity Checks</a></h3><p>Check inverses:</p><pre><code class="language-julia">julia&gt; x
+Stochastic{Float64,Float64,Float64}(0.8198419485754191, 0.5608953995378232, 0.3496467042194824)
+
+julia&gt; inv(x)
+Stochastic{Float64,Float64,Float64}(1.2197472960948492, -0.8344909017733231, 0.050718904750958915)
+
+julia&gt; 1.0/x
+Stochastic{Float64,Float64,Float64}(1.2197472960948492, -0.8344909017733231, 0.050718904750958915)
+
+julia&gt; x^(-1.0)
+Stochastic{Float64,Float64,Float64}(1.2197472960948492, -0.8344909017733233, 0.05071890475095886)
+
+julia&gt; inv(x)*x
+Stochastic{Float64,Float64,Float64}(0.9999999999999999, 1.1102230246251565e-16, 0.0)</code></pre><p>Check division:</p><pre><code class="language-julia">julia&gt; x/y
+Stochastic{Float64,Float64,Float64}(0.8341627751184755, 0.039239594639088035, 0.4932061731418642)
+
+julia&gt; x*y^(-1)
+Stochastic{Float64,Float64,Float64}(0.8341627751184755, 0.039239594639088105, 0.12961198046378852)</code></pre><p>Check <span>$log(exp(x)) == exp(log(x)) == x$</span>:</p><pre><code class="language-julia">julia&gt; exp(x)
+Stochastic{Float64,Float64,Float64}(2.270141010155909, 1.2733116488985963, 1.1508446453370713)
+
+julia&gt; log(x)
+Stochastic{Float64,Float64,Float64}(-0.19864370294139905, 0.6841506469783, 0.19244956817977596)
+
+julia&gt; log(exp(x))
+Stochastic{Float64,Float64,Float64}(0.8198419485754191, 0.5608953995378232, 0.3496467042194824)
+
+julia&gt; exp(log(x))
+Stochastic{Float64,Float64,Float64}(0.8198419485754191, 0.5608953995378232, 0.34964670421948235)
+
+julia&gt; x
+Stochastic{Float64,Float64,Float64}(0.8198419485754191, 0.5608953995378232, 0.3496467042194824)</code></pre><p>Check <span>$exp(-log(x)) = inv(x)$</span></p><pre><code class="language-julia">julia&gt; exp(-log(x))
+Stochastic{Float64,Float64,Float64}(1.2197472960948492, -0.8344909017733231, 0.050718904750958915)
+
+julia&gt; inv(x)
+Stochastic{Float64,Float64,Float64}(1.2197472960948492, -0.8344909017733231, 0.050718904750958915)</code></pre><footer><hr/></footer></article></body></html>
